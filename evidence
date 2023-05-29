@@ -1,0 +1,73 @@
+from datetime import datetime
+
+class ChargingStation:
+    def __init__(self, id, location, connectors, power_level, is_available=True):
+        self.id = id
+        self.location = location
+        self.connectors = connectors
+        self.power_level = power_level
+        self.is_available = is_available
+        self.bookings = []
+
+class User:
+    def __init__(self, name, email):
+        self.name = name
+        self.email = email
+
+class Booking:
+    def __init__(self, user, charging_station, start_time, end_time):
+        self.user = user
+        self.charging_station = charging_station
+        self.start_time = start_time
+        self.end_time = end_time
+
+class BookingSystem:
+    def __init__(self):
+        self.charging_stations = []
+
+    def add_charging_station(self, charging_station):
+        self.charging_stations.append(charging_station)
+
+    def book_charging_station(self, user, charging_station, start_time, end_time):
+        if charging_station.is_available:
+            booking = Booking(user, charging_station, start_time, end_time)
+            charging_station.bookings.append(booking)
+            charging_station.is_available = False
+            print(f"Booking confirmed for {charging_station.id} from {start_time} to {end_time}.")
+        else:
+            print(f"{charging_station.id} is not available at the specified time.")
+
+    def get_available_charging_stations(self, start_time, end_time):
+        available_stations = []
+        for charging_station in self.charging_stations:
+            if charging_station.is_available:
+                for booking in charging_station.bookings:
+                    if start_time < booking.end_time and end_time > booking.start_time:
+                        break
+                else:
+                    available_stations.append(charging_station)
+        return available_stations
+
+# Sample usage
+booking_system = BookingSystem()
+
+# Create charging stations
+station1 = ChargingStation("station1", "Sydney", ["Type 2", "CCS"], 50)
+station2 = ChargingStation("station2", "Melbourne", ["CHAdeMO", "CCS"], 100)
+
+# Add charging stations to the booking system
+booking_system.add_charging_station(station1)
+booking_system.add_charging_station(station2)
+
+# Create a user
+user = User("John Doe", "john.doe@example.com")
+
+# Book a charging station
+start_time = datetime(2023, 5, 22, 10, 0)  # Replace with the desired start time
+end_time = datetime(2023, 5, 22, 12, 0)  # Replace with the desired end time
+booking_system.book_charging_station(user, station1, start_time, end_time)
+
+# Get available charging stations
+available_stations = booking_system.get_available_charging_stations(start_time, end_time)
+for station in available_stations:
+    print(f"Available station: {station.id} ({station.location})")
